@@ -122,44 +122,20 @@ export class GraLLAMACtrl extends MetricsPanelCtrl {
           };
       });
 
-      // Create the column headings first
-      let row = 1;
-      let col = 1;
-      for (let dst of Array.from(dsts).sort()) {
-        col++;  // Start 1 cell in, like the data
-        hash['cells'].push({
-          value: dst,
-          style: {
-            "grid-row": row.toString(),
-            "grid-column": col.toString(),
-            // Leave this out for column headers, since we're okay with those stacking a bit
-            // "white-space": "nowrap",  // Should move this into CSS
-          }
-        });
-      }
-
+      let row = 0;
+      let col = 0;
       // Add the cells
       // TODO(dmar): Just save these sorted values
       for (let src of Array.from(srcs).sort()) {
-        row++;
-        col = 1; // This needs to be reset for each row
-        // Add a cell for the row header
-        hash['cells'].push({
-          value: src,
-          style: {
-            "grid-row": row.toString(),
-            "grid-column": col.toString(),
-            "white-space": "nowrap",  // Should move this into CSS
-            "text-align": "right",  // Should move this into CSS
-          }
-        });
+        col = 0; // This needs to be reset for each row
         for (let dst of Array.from(dsts).sort()) {
-          col++;
           // Confirm this plays nice if there is no matching entry
           let cell = Object.assign({}, hash['data'][src][dst]);
           cell['tooltip'] = this.panel.tooltipHover;
           cell['src'] = src;
           cell['dst'] = dst;
+          cell['row'] = row;
+          cell['col'] = col;
           // If this cell didn't exist, we'd have no style, so ensure that exists
           if (!('style' in cell)) {
             cell['style'] = {};
@@ -172,11 +148,14 @@ export class GraLLAMACtrl extends MetricsPanelCtrl {
           // to just not have a value
           // cell['style']['font-size'] = "0";
           hash['cells'].push(cell)
+          col++;
         }
+        row++;
       }
 
       // Get the unique values and sort
       hash['dsts'] = Array.from(dsts).sort();
+      hash['srcs'] = Array.from(srcs).sort();
       return hash;
   }
 
